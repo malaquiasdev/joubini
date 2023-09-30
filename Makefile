@@ -2,8 +2,6 @@ export CGO_ENABLED=0
 export GOOS=linux
 export GOARCH=amd64
 
-handlers := $(shell find . -name '*main.go')
-
 install:
 	@echo "\nInstalling dependencies"
 	go get ./...
