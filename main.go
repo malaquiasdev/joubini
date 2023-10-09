@@ -3,23 +3,26 @@ package main
 import (
 	"fmt"
 	"joubini/pkg/aws"
+	orderItems "joubini/pkg/sellingpartnerapi/orderitems"
+	"joubini/pkg/sellingpartnerapi/orders"
 	"joubini/pkg/utils"
 )
 
 func main() {
-	roleARN := utils.GetEnv("AWS_ROLE_ARN", "")
-	sessionName := utils.GetEnv("AWS_SESSION_NAME", "test")
-  region := utils.GetEnv("AWS_DEFAULT_REGION", "us-east-1")
-  
-  cred := aws.STSCredentials(roleARN, sessionName, region)
+	clientId := utils.GetEnv("LWA_ID", "")
+	clientSecret := utils.GetEnv("LWA_SECRET", "")
+	refreshToken := utils.GetEnv("LWA_REFRESH_TOKEN", "")
 
-  fmt.Println(*cred.AccessKeyId)
+	token := aws.GetToken(clientId, clientSecret, refreshToken)
 
-  clientId := utils.GetEnv("LWA_ID", "")
-  clientSecret := utils.GetEnv("LWA_SECRET", "")
-  refreshToken := utils.GetEnv("LWA_REFRESH_TOKEN", "")
+	fmt.Println(token.AccessToken)
 
-  token := aws.GetToken(clientId, clientSecret, refreshToken)
+	yesterday := utils.DateNowSubtractFormated("2006-01-02", 1)
+	fmt.Println("today", yesterday)
 
-  fmt.Println(token.AccessToken)
+	order, _ := orders.GetOrders(token.AccessToken, yesterday)
+	amazonOrderId := order[len(order)-1].AmazonOrderId
+	orderItems, _ := orderItems.GetOrderItems(token.AccessToken, amazonOrderId)
+	fmt.Println("order", order)
+	fmt.Println("orderItems", orderItems)
 }
